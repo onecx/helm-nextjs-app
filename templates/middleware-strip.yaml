@@ -1,0 +1,14 @@
+{{- if .Values.routing.enabled }}
+{{- if eq (include "nextjs.routing.type" $) "traefik" }}
+{{- if .Values.routing.stripprefix }}
+apiVersion: traefik.containo.us/v1alpha1
+kind: Middleware
+metadata:
+  name: {{ template "nextjs.fullname" $ }}-middleware
+spec:
+  stripPrefix:
+    prefixes:
+      - {{ .Values.routing.path }}
+{{ end }}
+{{ end }}
+{{ end }}

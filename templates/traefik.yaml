@@ -1,0 +1,36 @@
+{{- if .Values.routing.enabled }}
+{{- if eq (include "nextjs.routing.type" $) "traefik" }}
+kind: IngressRoute
+apiVersion: traefik.containo.us/v1alpha1
+metadata:
+  name: {{ template "nextjs.fullname" $ }}
+  labels:
+    app: {{ template "nextjs.fullname" $ }}
+{{ include "nextjs.labels.common" $ | indent 4 }}
+spec:
+  entryPoints:
+    {{- range $ep := .Values.routing.entryPoints }}
+    - {{ $ep }}
+    {{ end }}
+    {{- range $ep := .Values.global.routing.entryPoints }}
+    - {{ $ep }}
+    {{ end }}
+  routes:
+    - kind: Rule
+      {{ if .Values.routing.ingress.host.override }}
+      match: Host(`{{ .Values.routing.ingress.host.override }}.{{ .Values.global.default_url | default .Values.routing.default_url }}`){{ include "quarkus.traefik.path" $ }} 
+      {{ else if .Values.routing.ingress.host.name }}
+      match: Host(`{{ .Values.routing.ingress.host.name }}-{{ .Release.Namespace }}.{{ .Values.global.default_url | default .Values.routing.default_url }}`){{ include "quarkus.traefik.path" $ }} 
+      {{ else }}
+      match: Host(`{{ template "nextjs.fullname" $ }}-{{ .Release.Namespace }}.{{ .Values.global.default_url | default .Values.routing.default_url }}`){{ include "quarkus.traefik.path" $ }}             
+      {{- end }}
+      {{- if .Values.routing.stripprefix }}
+      middlewares:
+        - name: {{ template "nextjs.fullname" $ }}-middleware
+      {{ end }}
+      services:
+        - kind: Service
+          name: {{ template "nextjs.fullname" $ }}
+          port: {{ .Values.service.port }}
+{{ end }}
+{{ end }}

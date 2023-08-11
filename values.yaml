@@ -1,0 +1,80 @@
+global:
+  #Inject config maps
+  inject_maps: []
+
+  routing:
+    type:
+
+# Name of the instance, default {{ .Release.Name }}-{{ .Values.name | default .Chart.Name }}
+name:
+
+# Application image
+image:
+  # Docker registry
+  registry: "harbor.1000kit.org"
+  # Docker repository (application name)
+  repository: "change-me"
+  # Docker image tag (application version)
+  tag: "master"
+
+# Image pull secrets
+imagePullSecrets:
+
+# health
+livenessProbe:
+  url: /health
+
+readinessProbe:
+  url: /ready
+
+# pod
+pod:
+  port: 3000
+
+# service
+service:
+  port: 8080
+
+# Routing
+routing:
+  # Enable or disable routing
+  enabled: false
+  # Default URL
+  default_url: "change.com"
+
+  # traefik | ingress
+  type: none
+
+  # path
+  path:
+
+  # stripprefix for treafik
+  stripprefix: false
+
+  # ingress
+  ingress:
+    annotations:
+      ingress.kubernetes.io/ssl-redirect: "false"
+    # ingress
+    ingress:
+      # host configuration
+      host:
+        # prio1 if the name is define generate domain <override>.<default_url>
+        override:
+        # prio2 if the name is define generate domain <name>-<release_namespace>.<default_url>
+        name:
+        # else <release_name>-<name of chart_name>-<release_namespace>.<default_url>
+  # custom service name and port for the routing
+  service:
+    name:
+    port:
+
+# Replicas
+replicas: 1
+
+# Service account suffix
+# serviceAccountName =  {{ .Release.Name }}-{{ .Values.name | default .Chart.Name }}-serviceAccountSuffix
+serviceAccountSuffix:
+
+# Inject config maps
+inject_maps: []

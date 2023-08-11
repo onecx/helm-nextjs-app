@@ -1,0 +1,38 @@
+{{- if .Values.routing.enabled }}
+{{- if eq (include "nextjs.routing.type" $) "ingress" }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: {{ template "nextjs.fullname" $ }}-ingress
+  labels:
+    app: {{ template "nextjs.fullname" $ }}
+{{ include "nextjs.labels.common" $ | indent 4 }}    
+  annotations:
+{{- if (.Values.prometheus | default false) }}
+    prometheus.io/ingress: '{{ .Values.routing.prometheus.ingress |  default "true" }}'
+    prometheus.io/ingress_path: '{{ .Values.routing.prometheus.ingress_path |  default $.Values.livenessProbe.url }}'
+{{- end }}  
+{{- if .Values.routing.stripprefix }}
+    traefik.ingress.kubernetes.io/router.middlewares: '{{ .Release.Namespace }}-{{ template "quarkus.fullname" $ }}-middleware@kubernetescrd'
+{{- end }}  
+{{ toYaml .Values.routing.ingress.annotations  | indent 4 }}
+spec:
+  rules:
+  - http:
+      paths:
+      - path: {{ .Values.routing.path | default "/" }}
+        pathType: Prefix
+        backend:
+          service:
+            name: {{ include "nextjs.routing.service" $ }}
+            port: 
+              number: {{ .Values.routing.service.port | default .Values.service.port }}
+    {{ if .Values.routing.ingress.host.override }}
+    host: {{ .Values.routing.ingress.host.override }}.{{ .Values.global.default_url | default .Values.routing.default_url }} 
+    {{ else if .Values.routing.ingress.host.name }}
+    host: {{ .Values.routing.ingress.host.name }}-{{ .Release.Namespace }}.{{ .Values.global.default_url | default .Values.routing.default_url }}
+    {{ else }}
+    host: {{ template "nextjs.fullname" $ }}-{{ .Release.Namespace }}.{{ .Values.global.default_url | default .Values.routing.default_url }}              
+    {{- end }}
+{{ end }}
+{{ end }}

@@ -1,0 +1,17 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: {{ template "nextjs.fullname" $ }}
+  labels:
+    app: {{ template "nextjs.fullname" $ }}
+{{ include "nextjs.labels.common" $ | indent 4 }}    
+  annotations:
+    description: {{ template "nextjs.fullname" $ }}
+spec:
+  selector:
+    app: {{ template "nextjs.fullname" $ }}
+  ports:
+    - name: http
+      protocol: TCP
+      port: {{ .Values.service.port }}
+      targetPort: {{ .Values.pod.port }}

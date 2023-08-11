@@ -1,0 +1,13 @@
+apiVersion: v2
+name: nextjs
+version: 1.0.0
+description: Next.js helm chart
+appVersion: 1.0.0
+keywords:
+  - app
+  - nextjs
+  - react
+  - node
+maintainers:
+  - name: Tkit Developer
+    email: tkit-dev@1000kit.org

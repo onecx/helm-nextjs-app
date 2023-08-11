@@ -1,0 +1,105 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "nextjs.fullname" $ }}
+  labels:
+    app: {{ template "nextjs.fullname" $ }}
+{{ include "nextjs.labels.common" $ | indent 4 }}
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: {{ template "nextjs.fullname" $ }}
+  template:
+    metadata:
+      labels:
+        app: {{ template "nextjs.fullname" $ }}
+{{ include "nextjs.labels.common" $ | indent 8 }}
+      annotations:
+{{- range $map_name := .Values.inject_maps }}
+        checksum/{{ $map_name | replace "-" "_" }}: {{ index $.Values.global ($map_name | replace "-" "_") }}
+{{- end }}
+{{- range $map_name := .Values.global.inject_maps }}
+        checksum/{{ $map_name | replace "-" "_" }}: {{ index $.Values.global ($map_name | replace "-" "_") }}
+{{- end }} 
+{{- if .Values.env_secrets }}
+        checksum/{{ template "nextjs.fullname" $ }}-env: {{ include (print $.Template.BasePath "/secret-env.yaml") . | sha256sum }}
+{{- end }}
+    spec:
+      {{- if .Values.serviceAccountSuffix }} 
+      serviceAccountName: {{ template "nextjs.fullname" $ }}-{{ .Values.serviceAccountSuffix }}
+      {{- end }}
+      {{- if .Values.imagePullSecrets }}
+      imagePullSecrets:
+      - name: {{ .Values.imagePullSecrets }}
+      {{- end }}    
+      containers:
+      - name: {{ template "nextjs.fullname" $ }}
+        image: {{ .Values.image.registry }}/{{ .Values.image.repository }}:{{ .Values.image.tag }}
+        imagePullPolicy: Always
+        ports:
+          - containerPort: {{ .Values.pod.port }}
+            name: http
+          - containerPort: {{ .Values.pod.mgmt_port }}
+            name: mgmt
+        readinessProbe:
+          httpGet:
+            path: {{ .Values.readinessProbe.url }}
+            port: {{ .Values.pod.port }}
+            scheme: HTTP
+          initialDelaySeconds: 3
+          periodSeconds: 5
+          timeoutSeconds: 3
+          successThreshold: 1
+          failureThreshold: 5
+        livenessProbe:
+          httpGet:
+            path: {{ .Values.livenessProbe.url }}
+            port: {{ .Values.pod.port }}
+            scheme: HTTP
+          initialDelaySeconds: 3
+          periodSeconds: 5
+          timeoutSeconds: 3
+          successThreshold: 1
+          failureThreshold: 5                   
+        env:
+          {{- $envVals := .Values.global.env -}}
+          {{ if .Values.routing.enabled }}
+          {{ if .Values.routing.path }}
+          {{- $appBaseHref := dict "APP_BASE_HREF" .Values.routing.path -}}
+          {{- $envVals = merge $appBaseHref $envVals -}}
+          {{ end }}
+          {{ end }}        
+          {{- if (.Values.env) }}
+          {{- $envVals = merge .Values.env $envVals -}}
+          {{- end }}
+          {{- if $envVals }}
+          {{- range $key,$val := $envVals }}
+          - name: {{ $key }}
+            value: {{ tpl ($val|toString) $ | quote }}
+          {{- end }}
+          {{- end }}
+
+          {{- if .Values.env_secrets }}
+          {{- range $secret_key,$secret_value := .Values.env_secrets }}
+          - name: {{ $secret_key }}
+            valueFrom:
+              secretKeyRef:
+                key:  {{ $secret_key }}
+                name: {{ template "quarkus.fullname" $ }}-env
+          {{- end }}        
+          {{- end }}
+        
+        {{- if or (.Values.global.inject_maps) (.Values.inject_maps) }}
+        envFrom:
+          {{- $im := .Values.global.inject_maps -}}
+          {{- if (.Values.inject_maps) }}
+          {{- $im = concat .Values.inject_maps .Values.global.inject_maps | uniq -}}
+          {{- end }}
+          {{- if $im }}
+          {{- range $map_name := $im }}
+          - configMapRef:
+              name: {{ $map_name }}
+          {{- end }}
+          {{- end }}
+        {{- end }}
