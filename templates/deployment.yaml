@@ -40,8 +40,6 @@ spec:
         ports:
           - containerPort: {{ .Values.pod.port }}
             name: http
-          - containerPort: {{ .Values.pod.mgmt_port }}
-            name: mgmt
         readinessProbe:
           httpGet:
             path: {{ .Values.readinessProbe.url }}
