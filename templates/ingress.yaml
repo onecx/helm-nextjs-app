@@ -13,7 +13,7 @@ metadata:
     prometheus.io/ingress_path: '{{ .Values.routing.prometheus.ingress_path |  default $.Values.livenessProbe.url }}'
 {{- end }}  
 {{- if .Values.routing.stripprefix }}
-    traefik.ingress.kubernetes.io/router.middlewares: '{{ .Release.Namespace }}-{{ template "quarkus.fullname" $ }}-middleware@kubernetescrd'
+    traefik.ingress.kubernetes.io/router.middlewares: '{{ .Release.Namespace }}-{{ template "nextjs.fullname" $ }}-middleware@kubernetescrd'
 {{- end }}  
 {{ toYaml .Values.routing.ingress.annotations  | indent 4 }}
 spec:

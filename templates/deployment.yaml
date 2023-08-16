@@ -84,7 +84,7 @@ spec:
             valueFrom:
               secretKeyRef:
                 key:  {{ $secret_key }}
-                name: {{ template "quarkus.fullname" $ }}-env
+                name: {{ template "nextjs.fullname" $ }}-env
           {{- end }}        
           {{- end }}
         

@@ -18,11 +18,11 @@ spec:
   routes:
     - kind: Rule
       {{ if .Values.routing.ingress.host.override }}
-      match: Host(`{{ .Values.routing.ingress.host.override }}.{{ .Values.global.default_url | default .Values.routing.default_url }}`){{ include "quarkus.traefik.path" $ }} 
+      match: Host(`{{ .Values.routing.ingress.host.override }}.{{ .Values.global.default_url | default .Values.routing.default_url }}`){{ include "nextjs.traefik.path" $ }} 
       {{ else if .Values.routing.ingress.host.name }}
-      match: Host(`{{ .Values.routing.ingress.host.name }}-{{ .Release.Namespace }}.{{ .Values.global.default_url | default .Values.routing.default_url }}`){{ include "quarkus.traefik.path" $ }} 
+      match: Host(`{{ .Values.routing.ingress.host.name }}-{{ .Release.Namespace }}.{{ .Values.global.default_url | default .Values.routing.default_url }}`){{ include "nextjs.traefik.path" $ }} 
       {{ else }}
-      match: Host(`{{ template "nextjs.fullname" $ }}-{{ .Release.Namespace }}.{{ .Values.global.default_url | default .Values.routing.default_url }}`){{ include "quarkus.traefik.path" $ }}             
+      match: Host(`{{ template "nextjs.fullname" $ }}-{{ .Release.Namespace }}.{{ .Values.global.default_url | default .Values.routing.default_url }}`){{ include "nextjs.traefik.path" $ }}             
       {{- end }}
       {{- if .Values.routing.stripprefix }}
       middlewares:
