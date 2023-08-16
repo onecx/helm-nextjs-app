@@ -22,10 +22,10 @@ imagePullSecrets:
 
 # health
 livenessProbe:
-  url: /health
+  url: /api/health
 
 readinessProbe:
-  url: /ready
+  url: /api/ready
 
 # pod
 pod:
