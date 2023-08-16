@@ -55,15 +55,13 @@ routing:
   ingress:
     annotations:
       ingress.kubernetes.io/ssl-redirect: "false"
-    # ingress
-    ingress:
-      # host configuration
-      host:
-        # prio1 if the name is define generate domain <override>.<default_url>
-        override:
-        # prio2 if the name is define generate domain <name>-<release_namespace>.<default_url>
-        name:
-        # else <release_name>-<name of chart_name>-<release_namespace>.<default_url>
+    # host configuration
+    host:
+      # prio1 if the name is define generate domain <override>.<default_url>
+      override:
+      # prio2 if the name is define generate domain <name>-<release_namespace>.<default_url>
+      name:
+      # else <release_name>-<name of chart_name>-<release_namespace>.<default_url>
   # custom service name and port for the routing
   service:
     name:
